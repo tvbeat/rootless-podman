@@ -1,4 +1,4 @@
-{ pkgs }:
+{ name, pkgs }:
 let
   # nixpkgs doesn't properly include podman.service for a few reasons, so we need to manage this ourselves
   # see https://github.com/NixOS/nixpkgs/pull/160410#discussion_r856743592 for details
@@ -38,7 +38,7 @@ let
   '';
 
   nixEnv = pkgs.buildEnv {
-    name = "podman-env";
+    name = name;
     paths = with pkgs; [
       podman
       dockerCompat
@@ -60,16 +60,17 @@ in
       exit 1
     fi
 
+    # NOTE: this won't work if you have switched your profile to flakes in which case you'll have to use the `nix profile` command instead
     nix-env -i ${nixEnv}
 
-    mkdir -p ~/.config/containers ~/.local/share/systemd/user
+    mkdir -p ~/.config/containers ~/.config/systemd/user
 
     ln -fs ~/.nix-profile/etc/containers/containers.conf ~/.config/containers/
     ln -fs ~/.nix-profile/etc/containers/registries.conf ~/.config/containers/
     ln -fs ~/.nix-profile/etc/containers/policy.json ~/.config/containers/
 
-    ln -fs ~/.nix-profile/lib/systemd/user/podman.service ~/.local/share/systemd/user/
-    ln -fs ~/.nix-profile/lib/systemd/user/podman.socket ~/.local/share/systemd/user/
+    ln -fs ~/.nix-profile/lib/systemd/user/podman.service ~/.config/systemd/user/
+    ln -fs ~/.nix-profile/lib/systemd/user/podman.socket ~/.config/systemd/user/
 
     systemctl --user daemon-reload
 
