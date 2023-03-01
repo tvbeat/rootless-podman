@@ -53,6 +53,12 @@ let
   };
 in
   pkgs.writeShellScriptBin "install.sh" ''
+
+    if grep 'NAME=NixOS' /etc/os-release > /dev/null; then
+      echo "This script is not supported on NixOS, your environment is already configured by administrator."
+      exit 1
+    fi
+
     if ! which newuidmap > /dev/null; then
       echo "newuidmap command not found"
       echo "please install the uidmap package via 'sudo apt install -y uidmap' and run this script again"
